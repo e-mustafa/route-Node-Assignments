@@ -217,6 +217,44 @@ console.log(`\n Question ${++q}: --------------------------------------`);
 const splitString = (string) => string?.split(' ');
 console.log(splitString('The quick brown fox'));
 
+const splitStringNative1 = (string = '') => {
+	if (!string || typeof string != 'string') return 'please pass an string';
+	let arr = [];
+	let word = '';
+
+	for (let ele of string) {
+		if (ele !== ' ') {
+			word = word.concat(ele);
+		} else {
+			arr.push(word);
+			word = '';
+		}
+	}
+
+	if (word.length && word != ' ') arr.push(word);
+
+	return arr;
+};
+
+const splitStringNative2 = (string = '', separator = ' ') => {
+	if (!string || typeof string != 'string') return 'please pass a string!';
+	let arr = [];
+	let index = 0;
+
+	for (let ele of string) {
+		if (ele !== separator) {
+			arr[index] = `${arr[index] ? arr[index] : ''}${ele}`;
+		} else {
+			++index;
+		}
+	}
+
+	return arr;
+};
+
+console.log(splitStringNative1('The quick brown fox'));
+console.log(splitStringNative2('The quick brown fox'));
+
 // B. Part 2: Essay Questions (2.5 Grade):
 
 console.log('\n \n B. Part 2: Essay Questions ***********');
