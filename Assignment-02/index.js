@@ -1,6 +1,5 @@
 import fs, { promises as fsPromises } from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 // Assignment-02
 let q = 0;
@@ -9,16 +8,21 @@ let q = 0;
 // • Output Example:{File:“/home/user/project/index.js”, Dir:“/home/user/project”}
 console.log(`\n Question ${++q}: --------------------------------------`);
 
+// const currentPath = () => {
+// 	const __fileName = fileURLToPath(import.meta.url);
+
+// 	const data = { File: __fileName, Dir: path.dirname(__fileName) };
+// 	console.log(data);
+
+// 	return data;
+// };
+
 const currentPath = () => {
-	const __fileName = fileURLToPath(import.meta.url);
-
-	const data = { File: __fileName, Dir: path.dirname(__fileName) };
-	console.log(data);
-
-	return data;
+	const { filename: __filename, dirname: __dirname } = import.meta;
+	return { File: __filename, Dir: __dirname };
 };
 
-currentPath();
+console.log(currentPath());
 
 // 2. Write a function that takes a file path and returns its file name. (0.5 Grade)
 // • Input Example: /user/files/report.pdf
