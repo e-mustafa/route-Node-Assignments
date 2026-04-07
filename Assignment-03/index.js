@@ -112,7 +112,7 @@ const getUser = async (req, res) => {
 	const user = data.find((e) => e.id == id);
 
 	if (!user) {
-		res.write('user not found!');
+		res.write(JSON.stringify({ message: 'user not found!' }));
 		return res.end();
 	}
 
@@ -133,7 +133,7 @@ const addUser = (req, res) => {
 		const exist = data.some((e) => e.email == email);
 
 		if (exist) {
-			res.write('This email already exist!');
+			res.write(JSON.stringify({ message: 'This email already exist!' }));
 
 			return res.end();
 		}
@@ -143,7 +143,7 @@ const addUser = (req, res) => {
 		await writeDataToFile(data);
 
 		// res.write();
-		return res.end('User added successfully');
+		return res.end(JSON.stringify({ message: 'User added successfully' }));
 	});
 };
 
@@ -169,7 +169,7 @@ const editUser = async (req, res) => {
 		const exist = data.findIndex((e) => e.email === email && e.id != id);
 
 		if (exist !== -1) {
-			res.write('This email already exist!');
+			res.write(JSON.stringify({ message: 'This email already exist!' }));
 			return res.end();
 		}
 
@@ -177,7 +177,7 @@ const editUser = async (req, res) => {
 
 		await writeDataToFile(data);
 
-		res.write('User updated successfully');
+		res.write(JSON.stringify({ message: 'User updated successfully' }));
 		return res.end();
 	});
 };
@@ -188,12 +188,12 @@ const deleteUser = async (req, res) => {
 
 	const index = data.findIndex((e) => e.id == id);
 	if (index === -1) {
-		return res.end('user not found');
+		return res.end(JSON.stringify({ message: 'user not found' }));
 	}
 
 	data.splice(index, 1);
 
-	return res.end('user deleted successfully');
+	return res.end(JSON.stringify({ message: 'user deleted successfully' }));
 };
 
 // 1. Create an API that adds a new user to your users stored in a JSON file. (ensure that the email of the new user doesn’t exist before) (1 Grade)
@@ -235,10 +235,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(3000, () => console.log('Server start on port 3000'));
-
-
-
-
 
 // Part3: Node Internals (3 Grades):
 // 1. What is the Node.js Event Loop? (0.5 Grade)
