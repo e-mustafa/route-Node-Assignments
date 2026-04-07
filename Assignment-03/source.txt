@@ -1,0 +1,38 @@
+// 3. Create a pipeline that reads a file, compresses it, and writes it to another file. (0.5 Grade)
+// • Input Example: "./data.txt", "./data.txt.gz"
+
+
+
+
+// Part2: Simple CRUD Operations Using HTTP ( 5.5 Grades):
+// For all the following APIs, you must use the fs module to read and write data from a JSON file (e.g., users.json).
+// Do not store or manage data using arrays (0.5 Grades).
+// 1. Create an API that adds a new user to your users stored in a JSON file. (ensure that the email of the new user doesn’t exist before) (1 Grade)
+// o URL: POST /user
+
+// 2. Create an API that updates an existing user's name, age, or email by their ID. The user ID should be retrieved from the URL (1 Grade)
+// Note: Remember to update the corresponding values in the JSON file
+// o URL: PATCH /user/id
+
+// 3. Create an API that deletes a User by ID. The user id should be retrieved from the URL (1 Grade)
+// Note: Remember to delete the user from the file
+// o URL: DELETE /user/id
+
+// 4. Create an API that gets all users from the JSON file. (1 Grade)
+// o URL: GET /user
+
+// 5. Create an API that gets User by ID. (1 Grade)
+// o URL: GET /user/:id
+
+// Part3: Node Internals (3 Grades):
+// 1. What is the Node.js Event Loop? (0.5 Grade)
+// 2. What is Libuv and What Role Does It Play in Node.js? (0.5 Grade)
+// 3. How Does Node.js Handle Asynchronous Operations Under the Hood? (0.5 Grade)
+// 4. What is the Difference Between the Call Stack, Event Queue, and Event Loop in Node.js? (0.5 Grade)
+// 5. What is the Node.js Thread Pool and How to Set the Thread Pool Size? (0.5 Grade)
+// 6. How Does Node.js Handle Blocking and Non-Blocking Code Execution? (0.5 Grade)
+
+// important Notes about postman
+// 1. Name the endpoint with a meaningful name like 'Add User', not dummy names.
+// 2. Save your changes on each request( ctrl+s ).
+// 3. Include the Postman collection link (export your Postman collection ) in the email with your assignment link
