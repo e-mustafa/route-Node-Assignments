@@ -87,37 +87,45 @@ createPipeline('./Assignment-03/data.txt', './Assignment-03/data.txt.gz');
 // For all the following APIs, you must use the fs module to read and write data from a JSON file (e.g., users.json).
 // Do not store or manage data using arrays (0.5 Grades).
 
-const readDataFromFile = async (filePath = './Assignment-03/users.json') => {
+const resHeaders = { 'Content-Type': 'application/json' };
+
+const readDataFromFile = async (filePath = 'users.json') => {
+	const { dirname } = import.meta;
+	const fullPath = path.join(dirname, filePath);
 	try {
-		const data = await fs.readFile(filePath, 'utf8');
+		const data = await fs.readFile(fullPath, 'utf8');
 
 		return JSON.parse(data);
 	} catch (error) {
 		console.log('Error occurred while reading file:', error.message || error);
+		return [];
 	}
 };
 
-const writeDataToFile = async (data, filePath = './Assignment-03/users.json') => {
+const writeDataToFile = async (data, filePath = 'users.json') => {
+	const { dirname } = import.meta;
+	const fullPath = path.join(dirname, filePath);
+
 	try {
-		await fs.writeFile(filePath, JSON.stringify(data), 'utf8');
+		await fs.writeFile(fullPath, JSON.stringify(data), 'utf8');
 	} catch (error) {
 		console.log('Error occurred while write file:', error.message || error);
+		return false;
 	}
 };
 
-const getUser = async (req, res) => {
-	const id = path.basename(req.url);
+const getUser = async (req, res, id) => {
 	const data = await readDataFromFile();
 
 	const user = data.find((e) => e.id == id);
 
 	if (!user) {
-		res.write(JSON.stringify({ message: 'user not found!' }));
-		return res.end();
+		res.writeHead(409, resHeaders);
+		return res.end(JSON.stringify({ message: 'user not found!' }));
 	}
 
-	res.write(JSON.stringify(user));
-	return res.end();
+	res.writeHead(200, resHeaders);
+	return res.end(JSON.stringify(user));
 };
 
 const addUser = (req, res) => {
@@ -130,10 +138,16 @@ const addUser = (req, res) => {
 		const data = await readDataFromFile();
 		const { email, name, age } = JSON.parse(user);
 
+		if (!email || !name || !age) {
+			res.writeHead(409, resHeaders);
+			return res.end(JSON.stringify({ message: 'Please enter all fields' }));
+		}
+
 		const exist = data.some((e) => e.email == email);
 
 		if (exist) {
-			res.write(JSON.stringify({ message: 'This email already exist!' }));
+			res.writeHead(409, resHeaders);
+			res.end(JSON.stringify({ message: 'This email already exist!' }));
 
 			return res.end();
 		}
@@ -143,25 +157,26 @@ const addUser = (req, res) => {
 		await writeDataToFile(data);
 
 		// res.write();
+		res.writeHead(201, resHeaders);
 		return res.end(JSON.stringify({ message: 'User added successfully' }));
 	});
 };
 
-const editUser = async (req, res) => {
+const editUser = async (req, res, id) => {
 	let userData = '';
 
 	req.on('data', (chunk) => (userData += chunk));
 
 	req.on('end', async () => {
-		const id = path.basename(req.url);
-		console.log('id', id);
+		// const id = path.basename(req.url);
+		// console.log('id', id);
 
 		const data = await readDataFromFile();
 		const index = data.findIndex((e) => e.id == id);
 
 		if (index === -1) {
-			res.write('wrong id');
-			return res.end();
+			res.writeHead(409, resHeaders);
+			return res.end(JSON.stringify({ message: 'user not found' }));
 		}
 
 		const { email, name, age } = JSON.parse(userData);
@@ -169,30 +184,37 @@ const editUser = async (req, res) => {
 		const exist = data.findIndex((e) => e.email === email && e.id != id);
 
 		if (exist !== -1) {
-			res.write(JSON.stringify({ message: 'This email already exist!' }));
-			return res.end();
+			res.writeHead(409, resHeaders);
+			return res.end(JSON.stringify({ message: 'This email already exist!' }));
 		}
 
-		data[index] = { ...data[index], email, name, age };
+		// data[index] = { ...data[index], email, name, age };
+
+		email && (data[index].email = email);
+		name && (data[index].name = name);
+		age && (data[index].age = age);
 
 		await writeDataToFile(data);
 
-		res.write(JSON.stringify({ message: 'User updated successfully' }));
-		return res.end();
+		res.writeHead(202, resHeaders);
+		return res.end(JSON.stringify({ message: 'User updated successfully' }));
 	});
 };
 
-const deleteUser = async (req, res) => {
-	const id = path.basename(req.url);
+const deleteUser = async (req, res, id) => {
+	// const id = path.basename(req.url);
 	const data = await readDataFromFile();
 
 	const index = data.findIndex((e) => e.id == id);
 	if (index === -1) {
+		res.writeHead(409, resHeaders);
 		return res.end(JSON.stringify({ message: 'user not found' }));
 	}
 
 	data.splice(index, 1);
+	await writeDataToFile(data);
 
+	res.writeHead(200, resHeaders);
 	return res.end(JSON.stringify({ message: 'user deleted successfully' }));
 };
 
@@ -218,18 +240,23 @@ const server = http.createServer(async (req, res) => {
 	const method = req.method;
 
 	if (url === '/user' && method === 'GET') {
+		// Get All Users
 		const data = await readDataFromFile();
 		res.end(JSON.stringify(data));
 		return res.end();
-	} else if (url.startsWith('/user')) {
-		if (method == 'POST') {
-			addUser(req, res);
-		} else if (method == 'GET') {
-			getUser(req, res);
+	} else if (url.startsWith('/user') && method == 'POST') {
+		addUser(req, res);
+	} else if (url.startsWith('/user/')) {
+		const id = req.url.split('/')[2];
+		if (method == 'GET') {
+			getUser(req, res, id);
 		} else if (method == 'PATCH') {
-			editUser(req, res);
+			editUser(req, res, id);
 		} else if (method == 'DELETE') {
-			deleteUser(req, res);
+			deleteUser(req, res, id);
+		} else {
+			res.writeHead(404, resHeaders);
+			return res.end(JSON.stringify({ message: 'Endpoint not found' }));
 		}
 	}
 });
