@@ -39,25 +39,29 @@ const setData = async (data, filepath = './users.json') => {
 // o URL: POST /user
 
 app.post('/user', async (req, res) => {
-	const { name, age, email } = req.body;
+	try {
+		const { name, age, email } = req.body;
 
-	if (!email || !name || !age) {
-		res.send({ message: 'please! send full data' });
+		if (!email || !name || !age) {
+			return res.status(200).res.json({ message: 'please! json full data' });
+		}
+
+		const data = await getData();
+
+		const isExist = data?.some((e) => e.email == email);
+
+		if (isExist) {
+			return res.status(409).res.json({ message: 'This email already exist' });
+		}
+
+		data.push({ id: Date.now(), email, name, age });
+
+		await setData(data);
+
+		return res.status(201).json({ message: 'User added successfully.' });
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
-
-	const data = await getData();
-
-	const isExist = data?.some((e) => e.email == email);
-
-	if (isExist) {
-		return res.send({ message: 'This email already exist' });
-	}
-
-	data.push({ id: Date.now(), email, name, age });
-
-	await setData(data);
-
-	res.send({ message: 'User added successfully.' });
 });
 
 // 2. Create an API that updates an existing user's name, age, or email by their ID. The user ID should be retrieved from the params. (1 Grade)
@@ -65,41 +69,45 @@ app.post('/user', async (req, res) => {
 // o URL: PATCH /user/:id
 
 app.patch('/user/:id', async (req, res) => {
-	const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-	if (!id) {
-		res.send({ message: 'Please Provide user id' });
-	}
-
-	const { name, age, email } = req.body;
-
-	const data = await getData();
-
-	if (!name && !email && !age) {
-		return res.send({ message: 'Please provide some data' });
-	}
-
-	const index = data.findIndex((e) => e.id == id);
-
-	if (index == -1) {
-		return res.send({ message: 'User ID not found.' });
-	}
-
-	if (email) {
-		const existEmail = data?.some((e) => e.email == email && e.id != id);
-
-		if (existEmail) {
-			return res.send({ message: 'This email already exist' });
+		if (!id) {
+			return res.status(400).res.json({ message: 'Please Provide user id' });
 		}
+
+		const { name, age, email } = req.body;
+
+		const data = await getData();
+
+		if (!name && !email && !age) {
+			return res.status(400).res.json({ message: 'Please provide some data' });
+		}
+
+		const index = data.findIndex((e) => e.id == id);
+
+		if (index == -1) {
+			return res.status(404).res.json({ message: 'User ID not found.' });
+		}
+
+		if (email) {
+			const existEmail = data?.some((e) => e.email == email && e.id != id);
+
+			if (existEmail) {
+				return res.status(409).res.json({ message: 'This email already exist' });
+			}
+		}
+
+		email && (data[index].email = email);
+		name && (data[index].name = name);
+		age && (data[index].age = age);
+
+		await setData(data);
+
+		return res.status(200).res.json({ message: 'User updated successfully.' });
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
-
-	email && (data[index].email = email);
-	name && (data[index].name = name);
-	age && (data[index].email = email);
-
-	await setData(data);
-
-	res.send({ message: 'User updated successfully.' });
 });
 
 // 3. Create an API that deletes a User by ID. The user id should be retrieved from either the request body or optional params. (1 Grade)
@@ -107,93 +115,113 @@ app.patch('/user/:id', async (req, res) => {
 // o URL: DELETE /user{/:id}
 
 app.delete('/user/:id', async (req, res) => {
-	const { id } = req.params;
-	if (!id) {
-		return res.send({ message: 'Please Provide user id' });
+	try {
+		const { id } = req.params;
+		if (!id) {
+			return res.status(400).res.json({ message: 'Please Provide user id' });
+		}
+
+		const data = await getData();
+
+		const index = data.findIndex((e) => e.id == id);
+
+		if (index == -1) {
+			return res.status(404).res.json({ message: 'User ID not found.' });
+		}
+
+		data.splice(index, 1);
+		await setData(data);
+
+		return res.status(200).res.json({ message: 'User deleted successfully.' });
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
-
-	const data = await getData();
-
-	const index = data.findIndex((e) => e.id == id);
-
-	if (index == -1) {
-		return res.send({ message: 'User ID not found.' });
-	}
-
-	data.splice(index, 1);
-	await setData(data);
-
-	res.send({ message: 'User deleted successfully.' });
 });
 
 // 4. Create an API that gets a user by their name. The name will be provided as a query parameter. (1 Grade)
 // o URL: GET /user/getByName
 
 app.get('/user/getByName', async (req, res) => {
-	const { name } = req.query;
-	if (!name) {
-		return res.send({ message: 'Please provide a user name.' });
+	try {
+		const { name } = req.query;
+		if (!name) {
+			return res.status(400).res.json({ message: 'Please provide a user name.' });
+		}
+
+		const data = await getData();
+
+		const user = data.find((e) => e.name.toLowerCase().includes(name.toLowerCase()));
+
+		if (!user) {
+			return res.status(404).res.json({ message: 'User name not found.' });
+		}
+
+		return res.status(200).res.json(user);
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
-
-	const data = await getData();
-
-	const user = data.find((e) => e.name.toLowerCase().includes(name.toLowerCase()));
-
-	if (!user) {
-		return res.send({ message: 'User name not found.' });
-	}
-
-	res.send(user);
 });
 
 // 5. Create an API that gets all users from the JSON file. (1 Grade)
 // o URL: GET /user
 
 app.get('/user', async (req, res) => {
-	const data = await getData();
+	try {
+		const data = await getData();
 
-	res.send(data);
+		return res.status(200).res.json(data);
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
+	}
 });
 
 // 6. Create an API that filters users by minimum age. (1 Grade)
 // o URL: GET /user/filter
 
 app.get('/user/filter', async (req, res) => {
-	const { minAge } = req.query;
+	try {
+		const { minAge } = req.query;
 
-	if (!minAge) {
-		res.send({ message: 'Please enter min age.' });
+		if (!minAge) {
+			return res.status(400).res.json({ message: 'Please enter min age.' });
+		}
+
+		const data = await getData();
+
+		const result = data.filter((e) => e.age >= minAge);
+
+		if (!result.length) {
+			return res.status(404).res.json({ message: 'No user found.' });
+		}
+
+		return res.status(200).res.json(result);
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
-
-	const data = await getData();
-
-	const result = data.filter((e) => e.age >= minAge);
-
-	if (!result.length) {
-		return res.send({ message: 'No user found.' });
-	}
-
-	res.send(result);
 });
 
 // 7. Create an API that gets User by ID. (1 Grade)
 // o URL: GET /user/:id
 
 app.get('/user/:id', async (req, res) => {
-	const { id } = req.params;
-	if (!id) {
-		return res.send({ message: 'Please provide user ID.' });
+	try {
+		const { id } = req.params;
+		if (!id) {
+			return res.status(400).res.json({ message: 'Please provide user ID.' });
+		}
+
+		const data = await getData();
+
+		const user = data.find((e) => e.id == id);
+
+		if (!user) {
+			return res.status(404).res.json({ message: 'User not found.' });
+		}
+
+		return res.status(200).res.json(user);
+	} catch (error) {
+		return res.status(500).json({ message: error.message });
 	}
-
-	const data = await getData();
-
-	const user = data.find((e) => e.id == id);
-
-	if (!user) {
-		return res.send({ message: 'User not found.' });
-	}
-
-	res.send(user);
 });
 
 app.listen(PORT, () => {
@@ -212,6 +240,8 @@ app.listen(PORT, () => {
 // o Each song is performed by one or more musicians, and a musician may perform a number of songs.
 // o Each album has exactly one musician who acts as its producer.
 // o A producer may produce several albums.
+
+// <-- ERD diagram image attached in the assignment folder
 
 // Important Notes about postman
 // 1. Name the endpoint with a meaningful name like 'Add User', not dummy names.
