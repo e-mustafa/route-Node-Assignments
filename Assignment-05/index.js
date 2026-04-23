@@ -61,7 +61,7 @@ async function createDBTables(connection) {
 				price decimal(10, 2) NOT NULL,
 				quantity INT,
 				supplier_id INT,
-				FOREIGN KEY(supplier_id) REFERENCES Suppliers(id)
+				FOREIGN KEY(supplier_id) REFERENCES Suppliers(id) ON DELETE CASCADE ON UPDATE CASCADE
 			);`,
 	);
 	console.log('✔ products table created successfully');
@@ -74,7 +74,7 @@ async function createDBTables(connection) {
 				sale_date DATE,
 				
 				product_id INT,
-				FOREIGN KEY(product_id) REFERENCES Products(id)
+				FOREIGN KEY(product_id) REFERENCES Products(id) ON DELETE CASCADE ON UPDATE CASCADE
 			)`,
 	);
 	console.log('✔ sales table created successfully');
