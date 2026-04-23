@@ -14,8 +14,9 @@ app.use(express.json());
 
 // Part2: Design a schema (Mapping) for the following ERD. (Use any design tool you want)
 // (1 Grade)
-// <-- Assignment-5-mapping.png
-// or https://drive.google.com/file/d/1ZwdarqWoDuD3fof44zaZW1O7L4xO_aan/view?usp=sharing
+
+// 👈🏻👈🏻👈🏻👈🏻 <-- Assignment-5-mapping.png
+// or 🔗🔗🔗🔗 https://drive.google.com/file/d/1ZwdarqWoDuD3fof44zaZW1O7L4xO_aan/view?usp=sharing
 
 const dbName = 'assignment_5_retail_store_mustafa_ahmed';
 
